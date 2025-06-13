@@ -43,4 +43,20 @@ class Post extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'post_tags', 'post_id', 'tag_id')
+            ->withTimestamps();
+    }
+
+    public function thumbnail()
+    {
+        return $this->belongsTo(Image::class, 'thumbnail_image_id', 'image_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(Image::class, 'post_id', 'post_id');
+    }
 }
