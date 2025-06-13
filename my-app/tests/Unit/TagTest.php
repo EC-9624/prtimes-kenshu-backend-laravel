@@ -32,6 +32,6 @@ class TagTest extends TestCase
         $tags = Tag::pluck('name')->toArray();
 
         $this->assertCount(count($expectedTags), $tags);
-        $this->assertEqualsCanonicalizing($expectedTags, $tags);
+        $this->assertSame($expectedTags, $tags);
     }
 }

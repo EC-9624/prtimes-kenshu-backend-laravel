@@ -19,7 +19,7 @@ class PostTest extends TestCase
         $post = Post::factory()->for($user)->create();
 
         $this->assertInstanceOf(User::class, $post->user);
-        $this->assertEquals($user->user_id, $post->user->user_id);
+        $this->assertSame($user->user_id, $post->user->user_id);
     }
 
     public function test_post_has_tags()
