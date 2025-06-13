@@ -25,12 +25,6 @@ class User extends Authenticatable
      */
     protected $fillable = ['user_name', 'email', 'password'];
 
-    // Relationships
-    public function posts()
-    {
-        return $this->hasMany(Post::class, 'user_id', 'user_id');
-    }
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -52,5 +46,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relationships
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'user_id', 'user_id');
     }
 }
