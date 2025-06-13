@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('image_path')->nullable();
             $table->string('alt_text')->nullable();
             $table->timestamp('created_at')->default(DB::raw('now()'));
-
-            $table->foreign('post_id')->references('post_id')->on('posts')->onDelete('cascade');
         });
     }
 
