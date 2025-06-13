@@ -17,11 +17,11 @@ class TagFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->word();
 
         return [
-            'name' => $name,
-            'slug' => Str::slug($name),
+            'name' => $this->faker->word,
+            'slug' => Str::slug($this->faker->unique()->word),
+
         ];
     }
 }
