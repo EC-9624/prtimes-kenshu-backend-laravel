@@ -21,7 +21,7 @@ class ImageFactory extends Factory
         return [
             'image_id' => (string) Str::uuid(),
             'post_id' => Post::factory(),
-            'image_path' => '/img/' . $this->faker->unique()->word . '.jpg',
+            'image_path' => '/img/image-placeholder.svg',
             'alt_text' => fake()->words(3, true),
         ];
     }
