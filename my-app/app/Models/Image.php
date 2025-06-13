@@ -27,6 +27,7 @@ class Image extends Model
     {
         return [
             'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
