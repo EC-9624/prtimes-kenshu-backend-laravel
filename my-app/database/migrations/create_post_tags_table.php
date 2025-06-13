@@ -13,14 +13,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('images', function (Blueprint $table) {
-            $table->uuid('image_id')->primary();
-            $table->uuid('post_id')->nullable();
-            $table->string('image_path')->nullable();
-            $table->string('alt_text')->nullable();
+        Schema::create('post_tags', function (Blueprint $table) {
+            $table->uuid('post_id');
+            $table->unsignedBigInteger('tag_id');
             $table->timestamp('created_at')->default(DB::raw('now()'));
 
+            $table->primary(['post_id', 'tag_id']);
             $table->foreign('post_id')->references('post_id')->on('posts')->onDelete('cascade');
+            $table->foreign('tag_id')->references('tag_id')->on('tags')->onDelete('cascade');
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('images');
+        Schema::dropIfExists('post_tags');
     }
 };
