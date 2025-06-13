@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
 
 class PostSeeder extends Seeder
 {
+    private const TECHNOLOGY_TAG_FALLBACK_ID = 2;
+    private const APPS_TAG_FALLBACK_ID = 4;
+    private const MOBILE_TAG_FALLBACK_ID = 3;
     /**
      * Run the database seeds.
      */
@@ -36,9 +39,9 @@ class PostSeeder extends Seeder
 
                 // Attach tags
                 $post->tags()->attach([
-                    $tags['technology'] ?? 2,
-                    $tags['apps'] ?? 4,
-                    $tags['mobile'] ?? 3,
+                    $tags['technology'] ?? self::TECHNOLOGY_TAG_FALLBACK_ID,
+                    $tags['apps'] ?? self::APPS_TAG_FALLBACK_ID,
+                    $tags['mobile'] ?? self::MOBILE_TAG_FALLBACK_ID,
                 ]);
             });
     }
