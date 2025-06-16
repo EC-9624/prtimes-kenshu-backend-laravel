@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
-use App\Models\Tag;
+use App\Services\PostService;
 use Illuminate\View\View;
 
-/**
- * Show the home page with all posts.
- */
 class PostController extends Controller
 {
+    protected PostService $postService;
+
+    public function __construct(PostService $postService)
+    {
+        $this->postService = $postService;
+    }
+
     public function index(): View
     {
-        $posts = Post::with(['user', 'thumbnail', 'tags'])
-            ->whereNull('deleted_at')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $posts = $this->postService->getAllPosts();
 
         return view('index', [
             'title' => 'Home Page',
@@ -24,23 +24,12 @@ class PostController extends Controller
         ]);
     }
 
-    /**
-     * Show posts filtered by a tag slug.
-     *
-     * @param string $tagSlug The tag slug (e.g., "technology" or "mobile").
-     */
     public function showPostsByTag(string $tagSlug): View
     {
-        $tag = Tag::where('slug', $tagSlug)->firstOrFail();
-
-        $posts = $tag->posts()
-            ->with(['user', 'thumbnail', 'tags'])
-            ->whereNull('deleted_at')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $posts = $this->postService->getPostsByTagSlug($tagSlug);
 
         return view('index', [
-            'title' => 'Posts Tagged: ' . $tag->slug, // Assuming 'name' attribute on Tag model
+            'title' => 'Posts Tagged: ' . $tagSlug,
             'data' => $posts,
         ]);
     }
