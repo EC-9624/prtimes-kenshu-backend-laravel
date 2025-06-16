@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -70,5 +71,59 @@ class PostControllerTest extends TestCase
          $response->assertDontSee($post3->title); // The deleted post's title should not be seen
     }
 
+    /**
+     * Test that the posts by tag page displays correctly.
+     *
+     * @return void
+     */
+    public function test_tag_displays_posts(){
+        $user = User::factory()->create();
+
+        $tag = Tag::factory()->create(['slug' => 'technology', 'name' => 'Technology']);
+
+        $post1 = Post::factory()->for($user)->create([
+            'title' => 'Tech Post One',
+            'deleted_at' => null, // not soft-deleted
+        ]);
+        $post1->tags()->attach($tag); // Attach the tag to post1
+
+        $post2 = Post::factory()->for($user)->create([
+            'title' => 'Tech Post Two',
+            'deleted_at' => null,
+            'created_at' => now()->addHour(),
+        ]);
+        $post2->tags()->attach($tag);
+
+        $otherTag = Tag::factory()->create(['slug' => 'sports', 'name' => 'Sports']);
+
+        $post3 = Post::factory()->for($user)->create([
+            'title' => 'Sports Post',
+            'deleted_at' => null,
+        ]);
+        $post3->tags()->attach($otherTag);
+
+        $deletedPost = Post::factory()->for($user)->create([
+            'title' => 'Deleted Tech Post',
+            'deleted_at' => now(), // Soft-deleted
+        ]);
+        $deletedPost->tags()->attach($tag);
+
+        $response = $this->get(route('posts.byTag', ['tagSlug' => $tag->slug]));
+
+        $response->assertOk();
+        $response->assertViewIs('index');
+        $response->assertViewHas('title', 'Posts Tagged: ' . $tag->slug);
+        $response->assertViewHas('data');
+
+        $postsInView = $response->viewData('data');
+
+        $this->assertCount(2, $postsInView);
+        $this->assertTrue($postsInView->contains($post2));
+        $this->assertTrue($postsInView->contains($post1));
+        $this->assertFalse($postsInView->contains($post3)); // Post 3 (wrong tag) should NOT be there
+        $this->assertFalse($postsInView->contains($deletedPost));
+
+
+    }
 
 }

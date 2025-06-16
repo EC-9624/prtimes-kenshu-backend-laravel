@@ -28,9 +28,11 @@
                 @if ($post->tags->isNotEmpty())
                     <div class="flex flex-wrap gap-2 mt-4">
                         @foreach ($post->tags as $tag)
-                            <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                                {{ $tag->name }}
-                            </span>
+                            <a href="/categories/{{$tag->slug}}">
+                                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                    {{ $tag->name }}
+                                </span>
+                            </a>
                         @endforeach
                     </div>
                 @endif
