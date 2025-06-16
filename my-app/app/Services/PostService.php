@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Post;
 use App\Repositories\PostRepository;
 use Illuminate\Support\Collection;
 
@@ -29,5 +30,10 @@ class PostService
     public function getPostsByTagSlug(string $slug): Collection
     {
         return $this->postRepository->fetchPostsByTagSlug($slug);
+    }
+
+    public function getPostBySlug(string $postSlug): Post
+    {
+        return $this->postRepository->fetchPostBySlug($postSlug);
     }
 }

@@ -34,8 +34,9 @@ class PostController extends Controller
         ]);
     }
 
-    public function showPost(string $slug): View
+    public function showPost(string $postSlug): View
     {
-        return view('index');
+        $post = $this->postService->getPostBySlug($postSlug);
+        return view('post',['title' => 'Post Detail Page', 'data' => $post]);
     }
 }
