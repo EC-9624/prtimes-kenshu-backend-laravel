@@ -2,9 +2,13 @@
     <div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <h1 class="text-3xl font-bold text-gray-800">{{ $title }}</h1>
 
-        @if ($errors)
-            <div class="bg-red-100 text-red-800 border border-red-300 rounded p-4">
-                {{ $errors }}
+        @if ($errors->any())
+            <div class="bg-red-100 text-red-800 border border-red-300 rounded p-4 mb-6">
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
