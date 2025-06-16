@@ -1,25 +1,38 @@
 <x-layout :title="$title">
-    <h1>{{ $title }}</h1>
+    <div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        <h1 class="text-3xl font-bold text-gray-800">{{ $title }}</h1>
 
-    @if ($errors)
-        <div class="text-red-500">{{ $errors }}</div>
-    @endif
+        @if ($errors)
+            <div class="bg-red-100 text-red-800 border border-red-300 rounded p-4">
+                {{ $errors }}
+            </div>
+        @endif
 
-    @forelse ($data as $post)
-        <div class="mb-4">
-            <h2>{{ $post->title }}</h2>
-            <p>By {{ $post->user->user_name }}</p>
-            @if ($post->thumbnail)
-                <img src="{{ asset($post->thumbnail->image_path) }}" alt="Thumbnail" />
-            @endif
+        @forelse ($data as $post)
+            <div class="bg-white shadow rounded-lg p-6 space-y-4 border border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">{{ $post->title }}</h2>
+                <p class="text-sm text-gray-500">By {{ $post->user->user_name }}</p>
 
-            <ul>
-                @foreach ($post->tags as $tag)
-                    <li>{{ $tag->name }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @empty
-        <p>No posts found.</p>
-    @endforelse
+                @if ($post->thumbnail)
+                    <img
+                        src="{{ asset($post->thumbnail->image_path) }}"
+                        alt="Thumbnail"
+                        class="w-full h-auto rounded border"
+                    />
+                @endif
+
+                @if ($post->tags->isNotEmpty())
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        @foreach ($post->tags as $tag)
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                {{ $tag->name }}
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @empty
+            <p class="text-gray-500">No posts found.</p>
+        @endforelse
+    </div>
 </x-layout>

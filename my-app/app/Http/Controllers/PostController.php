@@ -24,6 +24,6 @@ class PostController extends Controller
             'title' => 'Home Page',
             'data' => $posts,
             'errors' => $errors
-        ]);
+        ])->withStatus(200);
     }
 }
