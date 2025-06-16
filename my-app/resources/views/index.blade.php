@@ -25,7 +25,7 @@
                     />
                 @endif
 
-                @if ($post->tags->isNotEmpty())
+                @if ($post->tags->count() > 0)
                     <div class="flex flex-wrap gap-2 mt-4">
                         @foreach ($post->tags as $tag)
                             <a href="/categories/{{$tag->slug}}">
