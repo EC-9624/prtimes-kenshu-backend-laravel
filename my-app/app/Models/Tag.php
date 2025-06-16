@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static where(string $string, string $tagSlug)
+ * @method static pluck(string $string)
  */
 class Tag extends Model
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Models;
 
+use App\Models\Tag;
+use Database\Seeders\TagSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Database\Seeders\TagSeeder;
-use App\Models\Tag;
 
 class TagTest extends TestCase
 {

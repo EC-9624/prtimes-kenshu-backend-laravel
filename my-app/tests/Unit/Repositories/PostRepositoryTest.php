@@ -38,11 +38,16 @@ class PostRepositoryTest extends TestCase
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['slug' => 'tech']);
+        $otherTag = Tag::factory()->create(['slug' => 'other']);
+
 
         $postWithTag = Post::factory()->for($user)->create(['deleted_at' => null]);
         $postWithTag->tags()->attach($tag);
 
         $postWithoutTag = Post::factory()->for($user)->create(['deleted_at' => null]);
+
+        $postWithOtherTag = Post::factory()->for($user)->create(['deleted_at' => now()]);
+        $postWithoutTag->tags()->attach($otherTag);
 
         $deleted = Post::factory()->for($user)->create(['deleted_at' => now()]);
         $deleted->tags()->attach($tag);
@@ -51,6 +56,9 @@ class PostRepositoryTest extends TestCase
 
         $this->assertTrue($result->contains($postWithTag));
         $this->assertFalse($result->contains($postWithoutTag));
+        $this->assertFalse($result->contains($postWithOtherTag));
         $this->assertFalse($result->contains($deleted));
     }
+
+
 }

@@ -22,7 +22,7 @@ class PostServiceTest extends TestCase
         $result = $service->getAllPosts();
 
         $this->assertInstanceOf(Collection::class, $result);
-        $this->assertEquals(['mocked_post'], $result->toArray());
+        $this->assertSame(['mocked_post'], $result->toArray());
     }
 
 

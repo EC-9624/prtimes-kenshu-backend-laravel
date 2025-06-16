@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Models;
 
-use Tests\TestCase;
-use App\Models\Post;
-use App\Models\User;
-use App\Models\Tag;
 use App\Models\Image;
+use App\Models\Post;
+use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PostTest extends TestCase
 {
