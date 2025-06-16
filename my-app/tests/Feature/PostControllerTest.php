@@ -13,18 +13,39 @@ class PostControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    /**
+     * @dataProvider indexPagePostsProvider
+     */
+    public function test_index_page_displays_correct_posts($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
+    {
+        $this->performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts);
+    }
 
     /**
-     * @dataProvider postsDataProvider
+     * @dataProvider technologyTagPostsProvider
      */
-    public function test_posts_display($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
+    public function test_technology_tag_displays_correct_posts($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
+    {
+        $this->performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts);
+    }
+
+    /**
+     * @dataProvider sportsTagPostsProvider
+     */
+    public function test_sports_tag_displays_correct_posts($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
+    {
+        $this->performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts);
+    }
+
+    protected function performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
     {
         $user = User::factory()->create();
 
-        // Create posts and tags
+        // Tags
         $tagTechnology = Tag::factory()->create(['slug' => 'technology', 'name' => 'Technology']);
         $tagSports = Tag::factory()->create(['slug' => 'sports', 'name' => 'Sports']);
 
+        // Posts
         $posts = [
             'post1' => Post::factory()->for($user)->create([
                 'title' => 'Tech Post One',
@@ -46,12 +67,13 @@ class PostControllerTest extends TestCase
             ]),
         ];
 
-        // Attach tags
+        // Tag attachments
         $posts['post1']->tags()->attach($tagTechnology);
         $posts['post2']->tags()->attach($tagTechnology);
         $posts['post3']->tags()->attach($tagSports);
         $posts['deletedPost']->tags()->attach($tagTechnology);
 
+        // Make the request
         $response = $this->get($url);
 
         $response->assertOk();
@@ -61,34 +83,44 @@ class PostControllerTest extends TestCase
 
         $viewPosts = $response->viewData('data');
 
-        // Assert posts that should appear
-        foreach ($expectedPosts as $postKey) {
-            $this->assertTrue($viewPosts->contains($posts[$postKey]));
-            $response->assertSee($posts[$postKey]->title);
+        foreach ($expectedPosts as $key) {
+            $this->assertTrue($viewPosts->contains($posts[$key]), "Expected post `{$key}` not found.");
+            $response->assertSee($posts[$key]->title);
         }
 
-        // Assert posts that should NOT appear
-        foreach ($unexpectedPosts as $postKey) {
-            $this->assertFalse($viewPosts->contains($posts[$postKey]));
-            $response->assertDontSee($posts[$postKey]->title);
+        foreach ($unexpectedPosts as $key) {
+            $this->assertFalse($viewPosts->contains($posts[$key]), "Unexpected post `{$key}` found.");
+            $response->assertDontSee($posts[$key]->title);
         }
     }
 
-    public static function postsDataProvider(): array
+    public static function indexPagePostsProvider(): array
     {
         return [
             'index page posts' => [
                 '/',
                 'Home Page',
-                ['post1', 'post2','post3'], //expected
-                [ 'deletedPost'], //unexpected
+                ['post1', 'post2', 'post3'],
+                ['deletedPost'],
             ],
+        ];
+    }
+
+    public static function technologyTagPostsProvider(): array
+    {
+        return [
             'technology tag posts' => [
                 '/categories/technology',
                 'Posts Tagged: technology',
                 ['post1', 'post2'],
                 ['post3', 'deletedPost'],
             ],
+        ];
+    }
+
+    public static function sportsTagPostsProvider(): array
+    {
+        return [
             'sports tag posts' => [
                 '/categories/sports',
                 'Posts Tagged: sports',
@@ -97,5 +129,4 @@ class PostControllerTest extends TestCase
             ],
         ];
     }
-
 }

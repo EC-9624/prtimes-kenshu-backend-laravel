@@ -6,6 +6,7 @@ use App\Repositories\PostRepository;
 use App\Services\PostService;
 use Illuminate\Support\Collection;
 use Mockery;
+use PDOException;
 use Tests\TestCase;
 
 class PostServiceTest extends TestCase
@@ -25,6 +26,21 @@ class PostServiceTest extends TestCase
         $this->assertSame(['mocked_post'], $result->toArray());
     }
 
+    public function test_get_all_posts_throws_pdo_exception()
+    {
+        $mock = Mockery::mock(PostRepository::class);
+        $mock->shouldReceive('fetchAllPosts')
+            ->once()
+            ->andThrow(new PDOException("Database failure"));
+
+        $service = new PostService($mock);
+
+        $this->expectException(PDOException::class);
+        $this->expectExceptionMessage("Database failure");
+
+        $service->getAllPosts();
+    }
+
 
     public function test_get_posts_by_tag_slug_delegates_to_repository()
     {
@@ -38,6 +54,22 @@ class PostServiceTest extends TestCase
         $result = $service->getPostsByTagSlug('tech');
 
         $this->assertCount(2, $result);
+    }
+
+    public function test_get_posts_by_tag_slug_throws_pdo_exception()
+    {
+        $mock = Mockery::mock(PostRepository::class);
+        $mock->shouldReceive('fetchPostsByTagSlug')
+            ->with('tech')
+            ->once()
+            ->andThrow(new PDOException("DB error fetching by tag"));
+
+        $service = new PostService($mock);
+
+        $this->expectException(PDOException::class);
+        $this->expectExceptionMessage("DB error fetching by tag");
+
+        $service->getPostsByTagSlug('tech');
     }
 
     protected function tearDown(): void

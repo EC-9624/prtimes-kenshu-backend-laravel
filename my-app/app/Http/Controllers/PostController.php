@@ -33,4 +33,9 @@ class PostController extends Controller
             'data' => $posts,
         ]);
     }
+
+    public function showPost(string $slug): View
+    {
+        return view('index');
+    }
 }
