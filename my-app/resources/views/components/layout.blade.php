@@ -9,9 +9,7 @@
 </head>
 
 <body>
-    <header>
-        <h1>this is a header</h1>
-    </header>
+    <x-header />
     {{ $slot }}
     <footer>
         <small>&copy; 2025 My App</small>
