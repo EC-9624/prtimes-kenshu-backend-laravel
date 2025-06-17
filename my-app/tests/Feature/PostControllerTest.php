@@ -21,6 +21,18 @@ class PostControllerTest extends TestCase
         $this->performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts);
     }
 
+    public static function indexPagePostsProvider(): array
+    {
+        return [
+            'index page posts' => [
+                '/',
+                'Home Page',
+                ['post1', 'post2', 'post3'],
+                ['deletedPost'],
+            ],
+        ];
+    }
+
     /**
      * @dataProvider technologyTagPostsProvider
      */
@@ -28,6 +40,18 @@ class PostControllerTest extends TestCase
     {
         $this->performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts);
     }
+    public static function technologyTagPostsProvider(): array
+    {
+        return [
+            'technology tag posts' => [
+                '/categories/technology',
+                'Posts Tagged: technology',
+                ['post1', 'post2'],
+                ['post3', 'deletedPost'],
+            ],
+        ];
+    }
+
 
     /**
      * @dataProvider sportsTagPostsProvider
@@ -36,6 +60,77 @@ class PostControllerTest extends TestCase
     {
         $this->performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts);
     }
+
+    public static function sportsTagPostsProvider(): array
+    {
+        return [
+            'sports tag posts' => [
+                '/categories/sports',
+                'Posts Tagged: sports',
+                ['post3'],
+                ['post1', 'post2', 'deletedPost'],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider postDetailProvider
+     */
+    public function test_post_detail_displays_correct_posts($slugKey, $shouldSee, $shouldNotSee): void
+    {
+        $user = User::factory()->create();
+
+        $posts = [
+            'visiblePost' => Post::factory()->for($user)->create([
+                'title' => 'Visible Post',
+                'slug' => 'visible-post',
+                'deleted_at' => null,
+            ]),
+            'deletedPost' => Post::factory()->for($user)->create([
+                'title' => 'Deleted Post',
+                'slug' => 'deleted-post',
+                'deleted_at' => now(),
+            ]),
+        ];
+
+        $slug = $posts[$slugKey]->slug;
+
+
+        $response = $this->get("/posts/{$slug}");
+
+        if ($shouldSee) {
+            $response->assertOk();
+            $response->assertViewIs('post');
+            $response->assertViewHas('data', $posts[$slugKey]);
+            $response->assertSee($posts[$slugKey]->title);
+        } else {
+            $response->assertNotFound();
+            $response->assertDontSee($posts[$slugKey]->title);
+        }
+    }
+
+    public static function postDetailProvider(): array
+    {
+        return [
+            'visible post should display' => [
+                'slugKey' => 'visiblePost',
+                'shouldSee' => true,
+                'shouldNotSee' => false,
+            ],
+            'deleted post should not display' => [
+                'slugKey' => 'deletedPost',
+                'shouldSee' => false,
+                'shouldNotSee' => true,
+            ],
+        ];
+    }
+
+    public function test_post_detail_returns_404_for_nonexistent_slug(): void
+    {
+        $response = $this->get('/posts/non-existent-slug');
+        $response->assertNotFound();
+    }
+
 
     protected function performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
     {
@@ -92,41 +187,5 @@ class PostControllerTest extends TestCase
             $this->assertFalse($viewPosts->contains($posts[$key]), "Unexpected post `{$key}` found.");
             $response->assertDontSee($posts[$key]->title);
         }
-    }
-
-    public static function indexPagePostsProvider(): array
-    {
-        return [
-            'index page posts' => [
-                '/',
-                'Home Page',
-                ['post1', 'post2', 'post3'],
-                ['deletedPost'],
-            ],
-        ];
-    }
-
-    public static function technologyTagPostsProvider(): array
-    {
-        return [
-            'technology tag posts' => [
-                '/categories/technology',
-                'Posts Tagged: technology',
-                ['post1', 'post2'],
-                ['post3', 'deletedPost'],
-            ],
-        ];
-    }
-
-    public static function sportsTagPostsProvider(): array
-    {
-        return [
-            'sports tag posts' => [
-                '/categories/sports',
-                'Posts Tagged: sports',
-                ['post3'],
-                ['post1', 'post2', 'deletedPost'],
-            ],
-        ];
     }
 }

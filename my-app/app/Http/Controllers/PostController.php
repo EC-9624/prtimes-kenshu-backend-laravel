@@ -37,6 +37,7 @@ class PostController extends Controller
     public function showPost(string $postSlug): View
     {
         $post = $this->postService->getPostBySlug($postSlug);
+
         return view('post',['title' => 'Post Detail Page', 'data' => $post]);
     }
 }
