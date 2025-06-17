@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Services\AuthService;
 
@@ -34,7 +35,7 @@ class AuthController extends Controller
 
         $this->authService->register($validated);
 
-        return redirect()->route('login')->with('success', 'Registered! Please log in.');
+        return redirect()->route('home')->with('success', 'Registered! Please log in.');
     }
 
     public function showLoginForm(): View

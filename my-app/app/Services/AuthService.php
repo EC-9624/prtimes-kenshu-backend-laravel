@@ -36,7 +36,8 @@ class AuthService
 
     public function register(array $data): bool {
         try {
-            $this->userRepository->create($data);
+            $user = $this->userRepository->create($data);
+            Auth::login($user);
             return true;
         } catch (QueryException $e) {
             Log::error('❌ Failed to register user: ' . $e->getMessage());
