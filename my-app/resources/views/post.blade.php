@@ -1,5 +1,5 @@
 <x-layout :title="$title">
-
+    <x-header />
     <div class="flex items-center justify-center">
         <div class="space-y-6 m-4 flex flex-col items-center w-full max-w-2xl">
             <!-- Back button -->
