@@ -2,14 +2,19 @@
 
 namespace App\Models;
 
+use Database\Factories\PostFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Post extends Model
 {
-    /** @use HasFactory<\Database\Factories\PostFactory> */
+    /** @use HasFactory<PostFactory> */
     use HasFactory, SoftDeletes, HasUuids;
 
     protected $primaryKey = 'post_id';
@@ -39,23 +44,23 @@ class Post extends Model
     }
 
     // Relationships
-    public function user()
+    public function user():BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
-    public function tags()
+    public function tags() : BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'post_tags', 'post_id', 'tag_id')
             ->withTimestamps();
     }
 
-    public function thumbnail()
+    public function thumbnail(): BelongsTo
     {
         return $this->belongsTo(Image::class, 'thumbnail_image_id', 'image_id');
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(Image::class, 'post_id', 'post_id');
     }

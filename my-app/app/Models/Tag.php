@@ -2,19 +2,24 @@
 
 namespace App\Models;
 
+use Database\Factories\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static where(string $string, string $tagSlug)
+ * @method static pluck(string $string)
+ */
 class Tag extends Model
 {
-    /** @use HasFactory<\Database\Factories\TagFactory> */
+    /** @use HasFactory<TagFactory> */
     use HasFactory;
-
     protected $primaryKey = 'tag_id';
     public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = ['name', 'slug'];
+
 
     /**
      * Get the attributes that should be cast.
