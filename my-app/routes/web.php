@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\PostController;
 
@@ -18,6 +19,22 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware('auth')->name('dashboard');
+
+Route::get('/test-auth', function () {
+    return [
+        'auth_check' => Auth::check(),
+        'user' => Auth::user(),
+        'session' => session()->all()
+    ];
+});
+
+Route::get('/debug-auth', function () {
+    return [
+        'auth_check' => Auth::check(),
+        'user' => Auth::user(),
+        'session_id' => session()->getId(),
+        'cookie' => request()->cookie('laravel_session'),
+    ];
+});
+
+

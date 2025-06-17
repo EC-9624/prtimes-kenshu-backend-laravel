@@ -38,19 +38,23 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request):RedirectResponse
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('dashboard');
+
+            logger('✅ Logged in: ' . Auth::user()['email']);
+            return redirect()->intended('/debug-auth');
         }
 
+        logger('❌ Login failed');
         return back()->withErrors([
             'email' => 'Invalid credentials.',
         ]);
     }
+
 
     public function logout(Request $request): RedirectResponse
     {
@@ -61,4 +65,5 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 }
+
 
