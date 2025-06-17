@@ -3,11 +3,11 @@
         <img class="mx-auto h-10 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=blue&shade=600" alt=" Your Company">
     </a>
     <div class="flex items-center justify-end gap-4">
-        @if (Auth::check() || (isset($userName) && isset($email)))
+        @if (Auth::check() === true)
         <div class="flex items-center space-x-4">
             <div class="text-sm text-gray-700">
-                <div><span class="font-semibold">Name:</span> {{ $userName }}</div>
-                <div><span class="font-semibold">Email:</span> {{ $email }}</div>
+                <div><span class="font-semibold">Name:</span> {{ Auth::user()->user_name }}</div>
+                <div><span class="font-semibold">Email:</span> {{ Auth::user()->email }}</div>
             </div>
         </div>
         <div class="flex gap-2">

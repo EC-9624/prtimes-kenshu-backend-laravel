@@ -19,4 +19,10 @@ class AuthService
         Log::warning('❌ Login failed');
         return false;
     }
+
+    public function logout(Request $request): void{
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    }
 }
