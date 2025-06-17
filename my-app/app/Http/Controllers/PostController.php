@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\PostService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PostController extends Controller
@@ -21,7 +20,6 @@ class PostController extends Controller
     public function index(): View
     {
         $posts = $this->postService->getAllPosts();
-
         return view('index', [
             'title' => 'Home Page',
             'data' => $posts,
@@ -51,5 +49,9 @@ class PostController extends Controller
         $post = $this->postService->getPostBySlug($postSlug);
 
         return view('post',['title' => 'Post Detail Page', 'data' => $post]);
+    }
+
+    public function createPost(): View{
+        return view('createPost');
     }
 }
