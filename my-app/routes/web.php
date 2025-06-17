@@ -20,14 +20,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
-Route::get('/test-auth', function () {
-    return [
-        'auth_check' => Auth::check(),
-        'user' => Auth::user(),
-        'session' => session()->all()
-    ];
-});
-
 Route::get('/debug-auth', function () {
     return [
         'auth_check' => Auth::check(),

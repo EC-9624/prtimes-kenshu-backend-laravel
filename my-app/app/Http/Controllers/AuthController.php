@@ -8,9 +8,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
+use App\Services\AuthService;
 
 class AuthController extends Controller
 {
+
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function showRegisterForm(): View
     {
         return view('auth.register');
@@ -22,6 +31,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6|confirmed',
+            'confirm_password' => 'required|string|min:6|confirmed',
         ]);
 
         User::create([
@@ -38,23 +48,19 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
+
     public function login(Request $request): RedirectResponse
     {
-        $credentials = $request->only('email', 'password');
+        $success = $this->authService->login($request->only('email', 'password'), $request);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            logger('✅ Logged in: ' . Auth::user()['email']);
-            return redirect()->intended('/debug-auth');
+        if ($success) {
+            return redirect()->intended('/');
         }
 
-        logger('❌ Login failed');
         return back()->withErrors([
             'email' => 'Invalid credentials.',
         ]);
     }
-
 
     public function logout(Request $request): RedirectResponse
     {
