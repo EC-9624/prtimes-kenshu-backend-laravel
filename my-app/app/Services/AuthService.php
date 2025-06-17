@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\UserRepository;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,7 @@ class AuthService
     {
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            Log::info('✅ Logged in: ' . Auth::user()['email']);
+            Log::info('✅ Logged in: ' . Auth::user()->email);
             return true;
         }
 
@@ -33,17 +34,14 @@ class AuthService
         $request->session()->regenerateToken();
     }
 
-    public function register(Request $request): bool
-    {
-        $validated = $request->validate([
-            'user_name'             => 'required|string|max:255',
-            'email'                 => 'required|email|unique:users',
-            'password'              => 'required|string|min:6|confirmed',
-            'password_confirmation' => 'required|string|min:6',
-        ]);
-
-        $this->userRepository->create($validated);
-
-        return true;
+    public function register(array $data): bool {
+        try {
+            $this->userRepository->create($data);
+            return true;
+        } catch (QueryException $e) {
+            Log::error('❌ Failed to register user: ' . $e->getMessage());
+            return false;
+        }
     }
+
 }

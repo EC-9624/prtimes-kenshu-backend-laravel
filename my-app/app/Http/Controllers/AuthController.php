@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use App\Services\AuthService;
 
@@ -27,8 +24,15 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
+        $validated = $request->validate([
+            'user_name'             => 'required|string|max:255',
+            'email'                 => 'required|email|unique:users',
+            'password'              => 'required|string|min:6|confirmed',
+            'password_confirmation' => 'required|string|min:6',
+        ]);
 
-        $this->authService->register($request);
+
+        $this->authService->register($validated);
 
         return redirect()->route('login')->with('success', 'Registered! Please log in.');
     }

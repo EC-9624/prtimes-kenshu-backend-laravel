@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 /**
  * @method static create(array $array)
+ * @method static where(string $string, string $string1)
  */
 class User extends Authenticatable
 {
