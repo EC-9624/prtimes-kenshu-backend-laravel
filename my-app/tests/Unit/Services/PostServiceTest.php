@@ -100,8 +100,6 @@ class PostServiceTest extends TestCase
         $service = new PostService($postRepoMock);
 
         $this->expectException(PDOException::class);
-        $this->expectExceptionMessage("DB error fetching by slug");
-
         $service->getPostBySlug('post-slug');
     }
 

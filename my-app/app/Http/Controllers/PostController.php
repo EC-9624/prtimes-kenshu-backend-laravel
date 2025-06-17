@@ -14,6 +14,9 @@ class PostController extends Controller
         $this->postService = $postService;
     }
 
+    /**
+     * @return View
+     */
     public function index(): View
     {
         $posts = $this->postService->getAllPosts();
@@ -24,6 +27,10 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * @param string $tagSlug
+     * @return View
+     */
     public function showPostsByTag(string $tagSlug): View
     {
         $posts = $this->postService->getPostsByTagSlug($tagSlug);
@@ -34,6 +41,10 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * @param string $postSlug
+     * @return View
+     */
     public function showPost(string $postSlug): View
     {
         $post = $this->postService->getPostBySlug($postSlug);
