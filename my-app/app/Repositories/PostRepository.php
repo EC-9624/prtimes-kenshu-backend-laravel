@@ -33,6 +33,16 @@ class PostRepository
             ->orderBy('created_at', 'desc')
             ->get();
     }
+
+    public function fetchPostBySlug(string $postSlug): ?Post
+    {
+        return Post::with(['user', 'thumbnail', 'tags'])
+            ->whereNull('deleted_at')
+            ->where('slug', $postSlug)
+            ->orderBy('created_at', 'desc')
+            ->first();
+    }
+
 }
 
 

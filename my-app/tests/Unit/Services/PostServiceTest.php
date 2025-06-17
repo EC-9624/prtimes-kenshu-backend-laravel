@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services;
 
+use App\Models\Post;
 use App\Repositories\PostRepository;
 use App\Services\PostService;
 use Illuminate\Support\Collection;
@@ -71,6 +72,38 @@ class PostServiceTest extends TestCase
 
         $service->getPostsByTagSlug('tech');
     }
+
+    public function test_get_post_by_slug_delegates_to_repository()
+    {
+        $postMock = Mockery::mock(Post::class);
+
+        $postRepoMock = Mockery::mock(PostRepository::class);
+        $postRepoMock->shouldReceive('fetchPostBySlug')
+            ->with('post-slug')
+            ->once()
+            ->andReturn($postMock);
+
+        $service = new PostService($postRepoMock);
+        $result = $service->getPostBySlug('post-slug');
+
+        $this->assertSame($postMock, $result);
+    }
+
+    public function test_get_post_by_slug_throws_pdo_exception()
+    {
+        $postRepoMock = Mockery::mock(PostRepository::class);
+        $postRepoMock->shouldReceive('fetchPostBySlug')
+            ->with('post-slug')
+            ->once()
+            ->andThrow(new PDOException("DB error fetching by slug"));
+
+        $service = new PostService($postRepoMock);
+
+        $this->expectException(PDOException::class);
+        $service->getPostBySlug('post-slug');
+    }
+
+
 
     protected function tearDown(): void
     {

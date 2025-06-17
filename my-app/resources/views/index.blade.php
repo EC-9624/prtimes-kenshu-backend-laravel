@@ -14,16 +14,18 @@
 
         @forelse ($data as $post)
             <div class="bg-white shadow rounded-lg p-6 space-y-4 border border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-900">{{ $post->title }}</h2>
-                <p class="text-sm text-gray-500">By {{ $post->user->user_name }}</p>
+                <a href="/posts/{{$post->slug}}">
+                    <h2 class="text-xl font-semibold text-gray-900">{{ $post->title }}</h2>
+                    <p class="text-sm text-gray-500">By {{ $post->user->user_name }}</p>
 
-                @if ($post->thumbnail)
-                    <img
-                        src="{{ asset($post->thumbnail->image_path) }}"
-                        alt="Thumbnail"
-                        class="w-full h-auto rounded border"
-                    />
-                @endif
+                    @if ($post->thumbnail)
+                        <img
+                            src="{{ asset($post->thumbnail->image_path) }}"
+                            alt="Thumbnail"
+                            class="w-full h-auto rounded border"
+                        />
+                    @endif
+                </a>
 
                 @if ($post->tags->count() > 0)
                     <div class="flex flex-wrap gap-2 mt-4">

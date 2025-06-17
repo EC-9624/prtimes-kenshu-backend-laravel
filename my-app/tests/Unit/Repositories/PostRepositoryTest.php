@@ -175,4 +175,87 @@ class PostRepositoryTest extends TestCase
             $this->addToAssertionCount(1);
         }
     }
+
+    // --- fetchPostBySlug Tests ---
+
+    /**
+     * @dataProvider fetchPostBySlugNormalCases
+     */
+    public function test_fetch_post_by_slug_normal_cases($setupCallback, $slugToSearch, $shouldFindPost, $description)
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->for($user)->create();
+
+        $setupCallback($post);
+
+        $result = $this->repository->fetchPostBySlug($slugToSearch);
+
+        if ($shouldFindPost) {
+            $this->assertNotNull($result, $description);
+            $this->assertEquals($post->id, $result->id, $description);
+        } else {
+            $this->assertNull($result, $description);
+        }
+    }
+
+    public static function fetchPostBySlugNormalCases(): array
+    {
+        return [
+            'slug matches and not soft deleted' => [
+                function ($post) {
+                    $post->update(['slug' => 'existing-slug', 'deleted_at' => null]);
+                },
+                'existing-slug',
+                true,
+                'Should find the post with matching slug and not soft deleted',
+            ],
+        ];
+    }
+
+
+    /**
+     * @dataProvider fetchPostBySlugAbnormalCases
+     */
+    public function test_fetch_post_by_slug_abnormal_cases($setupCallback, $slugToSearch, $shouldFindPost, $description)
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->for($user)->create();
+
+        $setupCallback($post);
+
+        $result = $this->repository->fetchPostBySlug($slugToSearch);
+
+        if ($shouldFindPost) {
+            $this->assertNotNull($result, $description);
+            $this->assertEquals($post->id, $result->id, $description);
+        } else {
+            $this->assertNull($result, $description);
+        }
+    }
+    public static function fetchPostBySlugAbnormalCases(): array
+    {
+        return [
+            'slug does not match any post' => [
+                function ($post) {
+                    $post->update(['slug' => 'unrelated-slug']);
+                },
+                'non-existent-slug',
+                false,
+                'Should return null when no post matches the slug',
+            ],
+            'post is soft deleted' => [
+                function ($post) {
+                    $post->update(['slug' => 'deleted-slug']);
+                    $post->delete();
+                },
+                'deleted-slug',
+                false,
+                'Should return null when post is soft deleted',
+            ],
+        ];
+    }
+
+
+
+
 }
