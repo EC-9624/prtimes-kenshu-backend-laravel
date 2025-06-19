@@ -1,4 +1,5 @@
 <x-layout :title="$title">
+    <x-header />
     <div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <h1 class="text-3xl font-bold text-gray-800">{{ $title }}</h1>
 
