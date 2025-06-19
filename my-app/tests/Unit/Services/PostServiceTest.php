@@ -3,106 +3,190 @@
 namespace Tests\Unit\Services;
 
 use App\Models\Post;
+use App\Models\User;
+use App\Models\Image;
 use App\Repositories\PostRepository;
 use App\Services\PostService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Mockery;
 use PDOException;
 use Tests\TestCase;
+use Throwable;
 
 class PostServiceTest extends TestCase
 {
+    use RefreshDatabase;
 
-    public function test_get_all_posts_delegates_to_repository()
+    protected PostRepository $postRepoMock;
+    protected PostService $service;
+
+    protected function setUp(): void
     {
-        $postRepoMock = Mockery::mock(PostRepository::class);
-        $postRepoMock->shouldReceive('fetchAllPosts')
+        parent::setUp();
+
+        $this->postRepoMock = Mockery::mock(PostRepository::class);
+        $this->service = new PostService($this->postRepoMock);
+    }
+
+    public function test_get_all_posts_delegates_to_repository(): void
+    {
+        $this->postRepoMock->shouldReceive('fetchAllPosts')
             ->once()
             ->andReturn(collect(['mocked_post']));
 
-        $service = new PostService($postRepoMock);
-        $result = $service->getAllPosts();
+        $result = $this->service->getAllPosts();
 
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertSame(['mocked_post'], $result->toArray());
     }
 
-    public function test_get_all_posts_throws_pdo_exception()
+    public function test_get_all_posts_throws_pdo_exception(): void
     {
-        $postRepoMock = Mockery::mock(PostRepository::class);
-        $postRepoMock->shouldReceive('fetchAllPosts')
+        $this->postRepoMock->shouldReceive('fetchAllPosts')
             ->once()
             ->andThrow(new PDOException("Database failure"));
-
-        $service = new PostService($postRepoMock);
 
         $this->expectException(PDOException::class);
         $this->expectExceptionMessage("Database failure");
 
-        $service->getAllPosts();
+        $this->service->getAllPosts();
     }
 
-
-    public function test_get_posts_by_tag_slug_delegates_to_repository()
+    public function test_get_posts_by_tag_slug_delegates_to_repository(): void
     {
-        $postRepoMock = Mockery::mock(PostRepository::class);
-        $postRepoMock->shouldReceive('fetchPostsByTagSlug')
+        $this->postRepoMock->shouldReceive('fetchPostsByTagSlug')
             ->with('tech')
             ->once()
             ->andReturn(collect(['post1', 'post2']));
 
-        $service = new PostService($postRepoMock);
-        $result = $service->getPostsByTagSlug('tech');
+        $result = $this->service->getPostsByTagSlug('tech');
 
         $this->assertCount(2, $result);
     }
 
-    public function test_get_posts_by_tag_slug_throws_pdo_exception()
+    public function test_get_posts_by_tag_slug_throws_pdo_exception(): void
     {
-        $postRepoMock = Mockery::mock(PostRepository::class);
-        $postRepoMock->shouldReceive('fetchPostsByTagSlug')
+        $this->postRepoMock->shouldReceive('fetchPostsByTagSlug')
             ->with('tech')
             ->once()
             ->andThrow(new PDOException("DB error fetching by tag"));
 
-        $service = new PostService($postRepoMock);
-
         $this->expectException(PDOException::class);
         $this->expectExceptionMessage("DB error fetching by tag");
 
-        $service->getPostsByTagSlug('tech');
+        $this->service->getPostsByTagSlug('tech');
     }
 
-    public function test_get_post_by_slug_delegates_to_repository()
+    public function test_get_post_by_slug_delegates_to_repository(): void
     {
         $postMock = Mockery::mock(Post::class);
 
-        $postRepoMock = Mockery::mock(PostRepository::class);
-        $postRepoMock->shouldReceive('fetchPostBySlug')
+        $this->postRepoMock->shouldReceive('fetchPostBySlug')
             ->with('post-slug')
             ->once()
             ->andReturn($postMock);
 
-        $service = new PostService($postRepoMock);
-        $result = $service->getPostBySlug('post-slug');
+        $result = $this->service->getPostBySlug('post-slug');
 
         $this->assertSame($postMock, $result);
     }
 
-    public function test_get_post_by_slug_throws_pdo_exception()
+    public function test_get_post_by_slug_throws_pdo_exception(): void
     {
-        $postRepoMock = Mockery::mock(PostRepository::class);
-        $postRepoMock->shouldReceive('fetchPostBySlug')
+        $this->postRepoMock->shouldReceive('fetchPostBySlug')
             ->with('post-slug')
             ->once()
             ->andThrow(new PDOException("DB error fetching by slug"));
 
-        $service = new PostService($postRepoMock);
-
         $this->expectException(PDOException::class);
-        $service->getPostBySlug('post-slug');
+        $this->service->getPostBySlug('post-slug');
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function test_create_post_with_thumbnail_and_tags(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $postId = Str::uuid()->toString();
+
+        $thumbnail = UploadedFile::fake()->image('thumb.jpg');
+        $additional = [
+            UploadedFile::fake()->image('img1.jpg'),
+            UploadedFile::fake()->image('img2.jpg'),
+        ];
+
+        $validated = [
+            'title' => 'Test Post',
+            'slug' => 'test-post',
+            'text' => 'Some text',
+            'thumbnail_image' => $thumbnail,
+            'alt_text' => 'Alt text',
+            'additional_images' => $additional,
+            'tag_slugs' => ['laravel', 'tech'],
+        ];
+
+        // Mock Post instance
+        $mockPost = Mockery::mock(Post::class)->makePartial();
+        $mockPost->post_id = $postId;
+
+        $this->postRepoMock
+            ->shouldReceive('createPost')
+            ->once()
+            ->with(Mockery::on(fn ($data) => $data['post_id'] === $postId))
+            ->andReturn($mockPost);
+
+        // Mock image creation for thumbnail
+        $mockThumbnailImage = Image::factory()->make(['post_id' => $postId]);
+        $this->postRepoMock
+            ->shouldReceive('saveImage')
+            ->once()
+            ->with(Mockery::on(fn ($data) =>
+            str_starts_with($data['image_path'], "posts/{$postId}/thumbnail")
+            ))
+            ->andReturn($mockThumbnailImage);
+
+        // Expect post update after thumbnail image is created
+        $mockPost
+            ->shouldReceive('update')
+            ->once()
+            ->with(['thumbnail_image_id' => $mockThumbnailImage->image_id]);
+
+        // Mock additional images
+        $this->postRepoMock
+            ->shouldReceive('saveImage')
+            ->times(count($additional))
+            ->with(Mockery::on(fn ($data) =>
+            str_starts_with($data['image_path'], "posts/{$postId}/additional")
+            ));
+
+        // Mock tag syncing
+        $this->postRepoMock
+            ->shouldReceive('getTagIdsBySlugs')
+            ->once()
+            ->with(['laravel', 'tech'])
+            ->andReturn([1, 2]);
+
+        $this->postRepoMock
+            ->shouldReceive('syncPostTags')
+            ->once()
+            ->with($mockPost, [1, 2]);
+
+        // Act
+        $this->service->createPost($validated, $user->user_id, $postId);
+
+        // Assert fake storage
+        Storage::disk('public')->assertExists("posts/{$postId}/thumbnail/{$thumbnail->hashName()}");
+
+        foreach ($additional as $img) {
+            Storage::disk('public')->assertExists("posts/{$postId}/additional/{$img->hashName()}");
+        }
+    }
 
 
     protected function tearDown(): void
