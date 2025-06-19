@@ -7,6 +7,8 @@ use App\Models\Tag;
 use App\Models\User;
 use App\Repositories\PostRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -192,7 +194,7 @@ class PostRepositoryTest extends TestCase
 
         if ($shouldFindPost) {
             $this->assertNotNull($result, $description);
-            $this->assertEquals($post->id, $result->id, $description);
+            $this->assertSame($post->id, $result->id, $description);
         } else {
             $this->assertNull($result, $description);
         }
@@ -227,7 +229,7 @@ class PostRepositoryTest extends TestCase
 
         if ($shouldFindPost) {
             $this->assertNotNull($result, $description);
-            $this->assertEquals($post->id, $result->id, $description);
+            $this->assertSame($post->id, $result->id, $description);
         } else {
             $this->assertNull($result, $description);
         }
@@ -255,7 +257,123 @@ class PostRepositoryTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider createPostCases
+     */
+    /**
+     * @dataProvider createPostCases
+     */
+    public function test_create_post($title, $slug, $description)
+    {
+        $user = User::factory()->create();
 
+        $post = $this->repository->createPost([
+            'post_id' => (string) Str::uuid(),
+            'user_id' => $user->user_id,
+            'title' => $title,
+            'slug' => $slug,
+            'text' => 'Body text',
+            'thumbnail_image_id' => null,
+        ]);
+
+        $this->assertTrue(
+            DB::table('posts')->where('post_id', $post->post_id)->exists(),
+            $description
+        );
+    }
+
+    public static function createPostCases(): array
+    {
+        return [
+            'basic title and slug' => [
+                'Test Title',
+                'test-title',
+                'Should create a post with given title and slug',
+            ],
+        ];
+    }
+
+
+    /**
+     * @dataProvider saveImageCases
+     */
+    public function test_save_image($imagePath, $altText, $description)
+    {
+        $post = Post::factory()->create();
+
+        $image = $this->repository->saveImage([
+            'post_id' => $post->post_id,
+            'image_path' => $imagePath,
+            'alt_text' => $altText,
+        ]);
+        $this->assertTrue(
+            DB::table('images')->where('image_id', $image->image_id)->exists(),
+            $description
+        );
+
+    }
+
+    public static function saveImageCases(): array
+    {
+        return [
+            'simple path and alt' => [
+                'posts/test/image.jpg',
+                'Alt text',
+                'Should create image with correct path and alt',
+            ],
+            'no alt text' => [
+                'posts/test/no-alt.jpg',
+                null,
+                'Should create image even if alt text is null',
+            ],
+        ];
+    }
+
+
+    /**
+     * @dataProvider getTagIdsBySlugsCases
+     */
+    public function test_get_tag_ids_by_slugs($existingSlugs, $searchSlugs, $expectedCount, $description)
+    {
+        foreach ($existingSlugs as $slug) {
+            Tag::factory()->create(['slug' => $slug]);
+        }
+
+        $tagIds = $this->repository->getTagIdsBySlugs($searchSlugs);
+
+        $this->assertCount($expectedCount, $tagIds, $description);
+    }
+
+    public static function getTagIdsBySlugsCases(): array
+    {
+        return [
+            'match two slugs' => [['news', 'tech'], ['news', 'tech'], 2, 'Should match both slugs'],
+            'match one of three' => [['news'], ['news', 'unknown'], 1, 'Should match one known slug'],
+            'no matches' => [[], ['unknown'], 0, 'Should return empty for no matches'],
+        ];
+    }
+
+    /**
+     * @dataProvider syncPostTagsCases
+     */
+    public function test_sync_post_tags($tagCount, $description)
+    {
+        $post = Post::factory()->create();
+        $tags = Tag::factory()->count($tagCount)->create();
+
+        $tagIds = $tags->pluck('tag_id')->toArray();
+        $this->repository->syncPostTags($post, $tagIds);
+
+        $this->assertSame($tagCount, $post->tags()->count(), $description);
+    }
+
+    public static function syncPostTagsCases(): array
+    {
+        return [
+            'sync two tags' => [2, 'Should sync two tags to post'],
+            'sync zero tags' => [0, 'Should detach all tags if given empty array'],
+        ];
+    }
 
 
 }
