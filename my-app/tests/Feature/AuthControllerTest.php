@@ -7,11 +7,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-const EXPECTS_COUNTS = 1;
-const ERRORS_COUNTS = 0;
-
 class AuthControllerTest extends TestCase
 {
+    const EXPECTS_COUNTS = 1;
+    const ERRORS_COUNTS = 0;
     use RefreshDatabase;
     public function test_show_register_form_returns_view()
     {
@@ -32,7 +31,7 @@ class AuthControllerTest extends TestCase
 
         $response->assertRedirect(route('login'));
 
-        $this->assertDatabaseCount('users', EXPECTS_COUNTS);
+        $this->assertDatabaseCount('users', self::EXPECTS_COUNTS);
 
         $this->assertDatabaseHas('users', [
             'email' => 'jane@example.com',
@@ -60,7 +59,7 @@ class AuthControllerTest extends TestCase
             'password',
         ]);
 
-        $this->assertDatabaseCount('users', ERRORS_COUNTS);
+        $this->assertDatabaseCount('users', self::ERRORS_COUNTS);
     }
 
     public function test_register_fails_on_duplicate_email()
@@ -79,6 +78,6 @@ class AuthControllerTest extends TestCase
 
         $response->assertRedirect(route('register'));
         $response->assertSessionHasErrors(['email']);
-        $this->assertSame(EXPECTS_COUNTS, User::where('email', 'duplicate@example.com')->count());
+        $this->assertSame(self::EXPECTS_COUNTS, User::where('email', 'duplicate@example.com')->count());
     }
 }
