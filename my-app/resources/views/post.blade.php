@@ -20,12 +20,12 @@
                     <!-- Thumbnail -->
                     @if ($data->thumbnail)
                         <img
-                            src="{{ $data->thumbnail->image_path}}"
+                            src="{{ Storage::disk('public')->url($data->thumbnail->image_path) }}"
                             alt="{{ $data->title }}"
                             class="mt-2 w-full rounded">
                     @else
                         <img
-                            src="/img/image-placeholder.svg"
+                            src="{{ Storage::disk('public')->url('image-placeholder.svg') }}"
                             alt="No thumbnail"
                             class="mt-2 w-full rounded">
                     @endif

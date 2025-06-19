@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\Image;
 use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Support\Collection;
@@ -34,6 +35,10 @@ class PostRepository
             ->get();
     }
 
+    /**
+     * @param string $postSlug
+     * @return Post|null
+     */
     public function fetchPostBySlug(string $postSlug): ?Post
     {
         return Post::with(['user', 'thumbnail', 'tags'])
@@ -41,6 +46,26 @@ class PostRepository
             ->where('slug', $postSlug)
             ->orderBy('created_at', 'desc')
             ->first();
+    }
+
+    public function createPost(array $data): Post
+    {
+        return Post::create($data);
+    }
+
+    public function saveImage(array $data): Image
+    {
+        return Image::create($data);
+    }
+
+    public function getTagIdsBySlugs(array $slugs): array
+    {
+        return Tag::whereIn('slug', $slugs)->pluck('tag_id')->toArray();
+    }
+
+    public function syncPostTags(Post $post, array $tagIds): void
+    {
+        $post->tags()->sync($tagIds);
     }
 
 }
