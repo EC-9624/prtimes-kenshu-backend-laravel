@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Services\PostService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class PostController extends Controller
 {
@@ -59,16 +61,17 @@ class PostController extends Controller
         return view('createPost');
     }
 
-    public function createPost(Request $request)
+    /**
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function createPost(Request $request): RedirectResponse
     {
-        $userId = Auth::id();
-        $postId = Str::uuid()->toString();
-
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:posts,slug',
             'text' => 'required|string',
-            'thumbnail_image' => 'nullable|image|max:5120', // 5MB
+            'thumbnail_image' => 'nullable|image|max:5120',
             'alt_text' => 'nullable|string|max:255',
             'additional_images' => 'nullable|array',
             'additional_images.*' => 'image|max:5120',
@@ -76,42 +79,13 @@ class PostController extends Controller
             'tag_slugs.*' => 'string|exists:tags,slug',
         ]);
 
-        $title = $validatedData['title'];
-        $slug = $validatedData['slug'];
-        $text = $validatedData['text'];
-        $altText = $validatedData['alt_text'] ?? null;
-        $tagSlugs = $validatedData['tag_slugs'] ?? [];
-        $thumbnailImagePath = null;
-        $additionalImagesPath = [];
+        try {
+            $this->postService->createPost($validated, Auth::id(), Str::uuid()->toString());
 
-        // Handle thumbnail upload
-        if ($request->hasFile('thumbnail_image')) {
-            $thumbnailImage = $request->file('thumbnail_image');
-            $thumbnailImagePath = $thumbnailImage->store("posts/{$postId}/thumbnail");
+            return redirect()->route('home')->with('success', 'Post successfully created.');
+        } catch (Throwable $e) {
+            Log::error('Post creation failed: ' . $e->getMessage());
+            return redirect()->route('home')->with('error', 'Create Post failed.');
         }
-
-
-        // Handle additional images
-        if ($request->hasFile('additional_images')) {
-            foreach ($request->file('additional_images') as $image) {
-                if ($image->isValid()) {
-                    $img_path = $image->store("posts/{$postId}/additional");
-                    $additionalImagesPath[] = $img_path;
-                }
-            }
-        }
-
-        dd([
-            'post_id' => $postId,
-            'user_id' => $userId,
-            'title' => $title,
-            'slug' => $slug,
-            'text' => $text,
-            'altText' => $altText,
-            'tagSlugs' => $tagSlugs,
-            'thumbnailPath' => $thumbnailImagePath,
-            'additionalImagePath' => $additionalImagesPath,
-        ]);
     }
-
 }

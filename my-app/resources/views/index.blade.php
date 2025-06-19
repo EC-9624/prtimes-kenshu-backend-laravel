@@ -21,7 +21,7 @@
 
                     @if ($post->thumbnail)
                         <img
-                            src="{{ asset($post->thumbnail->image_path) }}"
+                            src="{{ Storage::disk('public')->url($post->thumbnail->image_path) }}"
                             alt="Thumbnail"
                             class="w-full h-auto rounded border"
                         />

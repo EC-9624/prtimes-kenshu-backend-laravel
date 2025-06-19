@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 
+/**
+ * @method static create(array $data)
+ */
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */
