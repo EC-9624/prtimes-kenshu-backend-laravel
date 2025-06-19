@@ -22,6 +22,7 @@ class Post extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'post_id',
         'user_id',
         'title',
         'slug',

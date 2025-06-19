@@ -17,6 +17,7 @@ WORKDIR /var/www/
 
 COPY --from=composer/composer:latest /usr/bin/composer /usr/bin/composer
 
+COPY docker/php-fpm/php.ini /usr/local/etc/php/conf.d/custom.ini
 # FIX: Copy the *contents* of my-app from the build context (which is the project root)
 # into the /var/www/ directory inside the container.
 COPY my-app/ /var/www/

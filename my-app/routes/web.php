@@ -9,7 +9,13 @@ Route::get('/', [PostController::class, 'index'])->name('home');
 
 Route::get('categories/{tagSlug}', [PostController::class, 'showPostsByTag'])->name('posts.byTag');
 Route::get('posts/{postSlug}', [PostController::class, 'showPost'])->name('post');
-Route::get('create-post', [PostController::class, 'createPost'])->name('post.create');
+
+Route::get('create-post', [PostController::class, 'showCreatePost'])
+    ->middleware('auth')
+    ->name('createPost');
+Route::post('create-post', [PostController::class, 'createPost'])
+    ->middleware('auth')
+    ->name('createPost.post');
 
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
@@ -28,5 +34,6 @@ Route::get('/debug-auth', function () {
         'cookie' => request()->cookie('laravel_session'),
     ];
 });
+
 
 
