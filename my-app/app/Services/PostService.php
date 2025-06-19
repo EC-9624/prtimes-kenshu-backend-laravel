@@ -43,7 +43,6 @@ class PostService
     public function getPostBySlug(string $postSlug): Post
     {
         $post = $this->postRepository->fetchPostBySlug($postSlug);
-
         if (is_null($post)) {
             throw new ModelNotFoundException("Post not found with slug: {$postSlug}");
         }

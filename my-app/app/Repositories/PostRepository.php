@@ -41,28 +41,45 @@ class PostRepository
      */
     public function fetchPostBySlug(string $postSlug): ?Post
     {
-        return Post::with(['user', 'thumbnail', 'tags'])
+        return Post::with(['user', 'thumbnail', 'tags','images'])
             ->whereNull('deleted_at')
             ->where('slug', $postSlug)
             ->orderBy('created_at', 'desc')
             ->first();
     }
 
+    /**
+     * @param array $data
+     * @return Post
+     */
     public function createPost(array $data): Post
     {
         return Post::create($data);
     }
 
+    /**
+     * @param array $data
+     * @return Image
+     */
     public function saveImage(array $data): Image
     {
         return Image::create($data);
     }
 
+    /**
+     * @param array $slugs
+     * @return array
+     */
     public function getTagIdsBySlugs(array $slugs): array
     {
         return Tag::whereIn('slug', $slugs)->pluck('tag_id')->toArray();
     }
 
+    /**
+     * @param Post $post
+     * @param array $tagIds
+     * @return void
+     */
     public function syncPostTags(Post $post, array $tagIds): void
     {
         $post->tags()->sync($tagIds);
