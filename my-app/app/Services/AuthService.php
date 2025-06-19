@@ -16,6 +16,12 @@ class AuthService
     {
         $this->userRepository = $userRepository;
     }
+
+    /**
+     * @param array $credentials
+     * @param Request $request
+     * @return bool
+     */
     public function login(array $credentials, Request $request): bool
     {
         if (Auth::attempt($credentials)) {
@@ -28,12 +34,20 @@ class AuthService
         return false;
     }
 
+    /**
+     * @param Request $request
+     * @return void
+     */
     public function logout(Request $request): void{
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
     }
 
+    /**
+     * @param array $data
+     * @return bool
+     */
     public function register(array $data): bool {
         try {
             $user = $this->userRepository->create($data);
