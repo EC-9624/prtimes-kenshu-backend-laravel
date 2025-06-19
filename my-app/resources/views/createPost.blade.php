@@ -1,5 +1,6 @@
 <x-layout>
-    <div class="max-w-3xl my-4 mx-auto p-4 sm:p-6 lg:p-8 bg-white shadow-md rounded-lg">
+    <x-header/>
+    <div class="max-w-3xl my-4 mx-auto p-4 sm:p-6 lg:p-8 bg-white shadow-md rounded-lg mt-2">
         @if ($errors->any())
             <div class="mb-6 p-4 bg-red-50 border border-red-400 text-red-700 rounded-lg" role="alert">
                 <p class="font-semibold mb-2">Please correct the following errors:</p>
@@ -11,7 +12,7 @@
             </div>
         @endif
 
-        <form action="/xxx" method="POST" class="space-y-6" enctype="multipart/form-data">
+        <form action="{{route('createPost.post')}}" method="POST" class="space-y-6" enctype="multipart/form-data">
             @csrf
 
             <div>
@@ -57,7 +58,7 @@
                     id="thumbnail_image"
                     name="thumbnail_image"
                     accept="image/jpeg, image/png, image/gif, image/webp"
-                    class="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    class="w-full  file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                 <p class="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, GIF, WebP. Max file size: 5MB.</p>
             </div>
 
@@ -118,11 +119,10 @@
                     @endforeach
                 </div>
             </div>
-
-            <div class="flex justify-end pt-4">
+            <div class="flex justify-end pt-4 ">
                 <button
                     type="submit"
-                    class="px-8 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out">
+                    class="px-8 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out cursor-pointer">
                     Create Post
                 </button>
             </div>
