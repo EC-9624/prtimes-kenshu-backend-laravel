@@ -62,8 +62,6 @@ class PostService
         DB::beginTransaction();
 
         try {
-            $thumbnailPath = null;
-            $thumbnailImageId = null;
 
             $post = $this->postRepository->createPost([
                 'post_id' => $postId,

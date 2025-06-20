@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Image;
 use App\Repositories\PostRepository;
 use App\Services\PostService;
+use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -109,7 +110,7 @@ class PostServiceTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function test_create_post_with_thumbnail_and_tags(): void
+    public function test_create_post_with_thumbnail_and_tags_delegates_to_repository(): void
     {
         Storage::fake('public');
         $user = User::factory()->create();
@@ -185,6 +186,52 @@ class PostServiceTest extends TestCase
 
         foreach ($additional as $img) {
             Storage::disk('public')->assertExists("posts/{$postId}/additional/{$img->hashName()}");
+        }
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_create_post_throws_exception_and_rolls_back(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $postId = Str::uuid()->toString();
+
+        $thumbnail = UploadedFile::fake()->create('thumb.jpg', 100, 'image/jpeg');
+        $additional = [
+            UploadedFile::fake()->create('img1.jpg', 100, 'image/jpeg'),
+            UploadedFile::fake()->create('img2.jpg', 100, 'image/jpeg'),
+        ];
+
+        $validated = [
+            'title' => 'Fail Post',
+            'slug' => 'fail-post',
+            'text' => 'Text',
+            'thumbnail_image' => $thumbnail,
+            'alt_text' => 'Thumbnail alt',
+            'additional_images' => $additional,
+            'tag_slugs' => ['laravel'],
+        ];
+
+        // Simulate failure: repository throws exception during post creation
+        $this->postRepoMock
+            ->shouldReceive('createPost')
+            ->once()
+            ->with(Mockery::on(fn($data) => $data['post_id'] === $postId))
+            ->andThrow(new Exception('Simulated failure'));
+
+        // Expectation: the method throws and does NOT proceed to thumbnail, images, or tags
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Simulated failure');
+
+        // Act
+        $this->service->createPost($validated, $user->user_id, $postId);
+
+        // assert nothing was stored since transaction failed before saving
+        Storage::disk('public')->assertMissing("posts/{$postId}/thumbnail/{$thumbnail->hashName()}");
+        foreach ($additional as $img) {
+            Storage::disk('public')->assertMissing("posts/{$postId}/additional/{$img->hashName()}");
         }
     }
 
