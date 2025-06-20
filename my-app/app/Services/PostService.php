@@ -130,15 +130,11 @@ class PostService
         try {
             $post = self::getPostBySlug($post_slug);
 
-            $post->update([
-                'title' => $data['title'],
-                'slug' => $data['slug'],
-                'text' => $data['text'],
-            ]);
+            $this->postRepository->updatePost($post, $data);
 
             if (isset($data['tags']) && is_array($data['tags'])) {
-                $tagIds = Tag::whereIn('slug', $data['tags'])->pluck('tag_id')->toArray();
-                $post->tags()->sync($tagIds);
+                $tagIds = $this->postRepository->getTagIdsBySlugs($data['tags']);
+                $this->postRepository->syncPostTags($post, $tagIds);
             }
 
             DB::commit();

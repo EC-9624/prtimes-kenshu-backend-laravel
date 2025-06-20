@@ -85,6 +85,21 @@ class PostRepository
         $post->tags()->sync($tagIds);
     }
 
+    /**
+     * @param Post $post
+     * @param array $data
+     * @return void
+     */
+    public function updatePost(Post $post, array $data): void
+    {
+        $post->update([
+            'title' => $data['title'],
+            'slug' => $data['slug'],
+            'text' => $data['text'],
+        ]);
+    }
+
+
 }
 
 
