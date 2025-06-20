@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Post;
+use App\Models\Tag;
 use App\Repositories\PostRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class PostService
@@ -111,6 +113,38 @@ class PostService
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $post_slug
+     * @param array $data
+     * @return void
+     * @throws Throwable
+     */
+    public function updatePost(string $post_slug, array $data): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post = self::getPostBySlug($post_slug);
+
+            $post->update([
+                'title' => $data['title'],
+                'slug' => $data['slug'],
+                'text' => $data['text'],
+            ]);
+
+            if (isset($data['tags']) && is_array($data['tags'])) {
+                $tagIds = Tag::whereIn('slug', $data['tags'])->pluck('tag_id')->toArray();
+                $post->tags()->sync($tagIds);
+            }
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Failed to update post: ' . $e->getMessage(), ['slug' => $post_slug]);
             throw $e;
         }
     }
