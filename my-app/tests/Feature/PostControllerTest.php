@@ -149,6 +149,7 @@ class PostControllerTest extends TestCase
         $response = $this->get(route('createPost'));
 
         $response->assertRedirect(route('login'));
+        $response->assertStatus(302);
     }
 
     public function test_create_post_successfully_redirects_and_shows_success_message(): void
