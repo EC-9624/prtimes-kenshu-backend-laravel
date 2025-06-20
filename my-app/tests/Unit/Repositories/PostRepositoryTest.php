@@ -375,5 +375,14 @@ class PostRepositoryTest extends TestCase
         ];
     }
 
+//    public function test_update_post()
+//    {
+//
+//    }
+//
+//    public static function updatePostCases(){
+//
+//    }
+
 
 }
