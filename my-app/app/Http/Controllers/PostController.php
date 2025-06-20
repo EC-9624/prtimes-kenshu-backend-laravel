@@ -95,11 +95,21 @@ class PostController extends Controller
     }
 
     /**
+     * @param Request $request
+     * @param string $postSlug
+     * @return RedirectResponse
      * @throws Throwable
      */
     public function editPost(Request $request, string $postSlug): RedirectResponse
     {
         $post = $this->postService->getPostBySlug($postSlug);
+
+        // Check if the current user is the author of the post
+        if (!Auth::check() || Auth::id() !== $post->user_id) {
+            return redirect()
+                ->route('editPost', $postSlug)
+                ->withErrors(['You are not authorized to edit this post.']);
+        }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -107,7 +117,7 @@ class PostController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('posts', 'slug')->ignore($post->post_id, 'post_id')
+                Rule::unique('posts', 'slug')->ignore($post->post_id, 'post_id'),
             ],
             'text' => 'required|string',
             'tag_slugs' => 'nullable|array',
@@ -121,6 +131,8 @@ class PostController extends Controller
             'tags' => $validated['tag_slugs'] ?? [],
         ]);
 
-        return redirect()->route('post', $validated['slug'])->with('success', 'Post updated successfully!');
+        return redirect()
+            ->route('post', $validated['slug'])
+            ->with('success', 'Post updated successfully!');
     }
 }

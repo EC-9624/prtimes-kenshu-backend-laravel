@@ -2,11 +2,18 @@
     <x-header />
     <div class="flex items-center justify-center">
         <div class="space-y-6 m-4 flex flex-col items-center w-full max-w-2xl">
-            <!-- Back button -->
-            <div class="self-start">
-                <a href="{{ url('/') }}" class="text-blue-500 hover:underline text-sm flex items-center">
-                    ← Top
-                </a>
+            <div class="flex justify-between max-w-2xl w-full justify-items-center">
+                <!-- Back button -->
+                <div class="self-start">
+                    <a href="{{ url('/') }}" class="text-blue-500 hover:underline text-sm flex items-center">
+                        ← Top
+                    </a>
+                </div>
+                <div class="self-start">
+                    <a href="{{ route('editPost', $data->slug) }}" class="text-blue-500 hover:underline text-sm flex items-center ">
+                        edit post
+                    </a>
+                </div>
             </div>
 
             <!-- Post content -->
