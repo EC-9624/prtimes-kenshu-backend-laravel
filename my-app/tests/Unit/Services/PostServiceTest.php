@@ -235,6 +235,91 @@ class PostServiceTest extends TestCase
         }
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function test_update_post_delegates_to_repository(): void
+    {
+        $slug = 'example-slug';
+
+        $updateData = [
+            'title' => 'Updated Title',
+            'text' => 'Updated content',
+            'tags' => ['tech', 'news'],
+        ];
+
+        $mockPost = Mockery::mock(Post::class);
+        $mockPost->shouldIgnoreMissing(); // for things like ->update()
+
+        // fetchPostBySlug should return the post
+        $this->postRepoMock
+            ->shouldReceive('fetchPostBySlug')
+            ->once()
+            ->with($slug)
+            ->andReturn($mockPost);
+
+        // updatePost should be called with correct arguments
+        $this->postRepoMock
+            ->shouldReceive('updatePost')
+            ->once()
+            ->with($mockPost, $updateData);
+
+        // getTagIdsBySlugs should return IDs for tag slugs
+        $this->postRepoMock
+            ->shouldReceive('getTagIdsBySlugs')
+            ->once()
+            ->with(['tech', 'news'])
+            ->andReturn([1, 2]);
+
+        // syncPostTags should sync tags
+        $this->postRepoMock
+            ->shouldReceive('syncPostTags')
+            ->once()
+            ->with($mockPost, [1, 2]);
+
+        $this->service->updatePost($slug, $updateData);
+
+        $this->assertTrue(true); // If we got here, test passed.
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_update_post_throws_and_rolls_back(): void
+    {
+        $slug = 'fail-post';
+        $data = [
+            'title' => 'Should Fail',
+            'text' => 'This should trigger a rollback',
+            'tags' => ['fail-tag'],
+        ];
+
+        $mockPost = Mockery::mock(Post::class);
+
+        // Simulate fetchPostBySlug returning the post
+        $this->postRepoMock
+            ->shouldReceive('fetchPostBySlug')
+            ->once()
+            ->with($slug)
+            ->andReturn($mockPost);
+
+        // Simulate updatePost throwing an exception
+        $this->postRepoMock
+            ->shouldReceive('updatePost')
+            ->once()
+            ->with($mockPost, $data)
+            ->andThrow(new \Exception('Simulated update failure'));
+
+        // Tag sync should NOT happen
+        $this->postRepoMock->shouldNotReceive('getTagIdsBySlugs');
+        $this->postRepoMock->shouldNotReceive('syncPostTags');
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Simulated update failure');
+
+        $this->service->updatePost($slug, $data);
+    }
+
 
     protected function tearDown(): void
     {

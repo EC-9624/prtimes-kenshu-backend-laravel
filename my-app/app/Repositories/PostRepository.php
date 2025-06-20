@@ -94,7 +94,6 @@ class PostRepository
     {
         $post->update([
             'title' => $data['title'],
-            'slug' => $data['slug'],
             'text' => $data['text'],
         ]);
     }
