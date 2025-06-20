@@ -16,6 +16,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('edit-post/{post}', [PostController::class, 'showEditPost'])->name('editPost');
     Route::patch('edit-post/{post}', [PostController::class, 'editPost'])->name('editPost.post');
+
+    Route::delete('delete-post/{post}', [PostController::class, 'deletePost'])->name('deletePost');
 });
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');

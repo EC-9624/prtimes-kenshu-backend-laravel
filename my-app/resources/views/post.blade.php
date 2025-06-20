@@ -9,15 +9,36 @@
                         ← Top
                     </a>
                 </div>
-                <div class="self-start">
-                    <a href="{{ route('editPost', $data->slug) }}" class="text-blue-500 hover:underline text-sm flex items-center ">
-                        edit post
-                    </a>
+                <div >
+                    <div>
+                        <a href="{{ route('editPost', $data->slug) }}" class="text-blue-500 hover:underline text-sm flex items-center">
+                            edit post
+                        </a>
+                        <form method="POST" action="{{ route('deletePost', $data->slug) }}" class="inline ml-2">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="text-red-500 hover:underline text-sm"
+                                    onclick="return confirm('Are you sure you want to delete this post?');">
+                                delete post
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
+            </div>
             <!-- Post content -->
             <div class="space-y-4 w-full">
+                @if ($errors->any())
+                    <div class="mb-6 p-4 bg-red-50 border border-red-400 text-red-700 rounded-lg" role="alert">
+                        <p class="font-semibold mb-2">Please correct the following errors:</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="pb-4 w-full">
                     <!-- Title -->
                     <h1 class="text-2xl font-semibold text-gray-900">

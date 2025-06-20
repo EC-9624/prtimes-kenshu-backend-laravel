@@ -135,4 +135,30 @@ class PostController extends Controller
             ->route('post', $validated['slug'])
             ->with('success', 'Post updated successfully!');
     }
+
+    /**
+     * @param string $postSlug
+     * @return RedirectResponse
+     * @throws Throwable
+     */
+    public function deletePost(string $postSlug): RedirectResponse
+    {
+        // Resolve once
+        $post = $this->postService->getPostBySlug($postSlug);
+
+        // Authorization
+        if (!Auth::check() || Auth::id() !== $post->user_id) {
+            return redirect()
+                ->route('post', $postSlug)
+                ->withErrors(['You are not authorized to delete this post.']);
+        }
+
+        // Pass model instead of slug
+        $this->postService->deletePost($post);
+
+        return redirect()->route('home')->with('success', 'Post deleted successfully.');
+    }
+
+
+
 }

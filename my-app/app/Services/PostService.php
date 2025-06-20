@@ -145,5 +145,21 @@ class PostService
         }
     }
 
+    public function deletePost(Post $post): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post->delete(); // Soft delete
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Failed to delete post: ' . $e->getMessage(), ['post_id' => $post->post_id]);
+            throw $e;
+        }
+    }
+
+
+
 
 }

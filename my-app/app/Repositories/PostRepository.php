@@ -98,6 +98,16 @@ class PostRepository
         ]);
     }
 
+    /**
+     * @param Post $post
+     * @return bool
+     */
+    public function softDeletePost(Post $post): bool
+    {
+        return $post->delete();
+    }
+
+
 
 }
 
