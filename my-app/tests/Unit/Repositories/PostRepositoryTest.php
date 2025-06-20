@@ -260,9 +260,6 @@ class PostRepositoryTest extends TestCase
     /**
      * @dataProvider createPostCases
      */
-    /**
-     * @dataProvider createPostCases
-     */
     public function test_create_post($title, $slug, $description)
     {
         $user = User::factory()->create();
