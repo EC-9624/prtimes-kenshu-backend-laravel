@@ -90,7 +90,7 @@ class PostService
             }
 
             // Handle additional images
-            if ($validated['additional_images'] instanceof UploadedFile) {
+            if (is_array($validated['additional_images'])) {
                 foreach ($validated['additional_images'] as $image) {
                     $path = $image->store("posts/{$postId}/additional",'public');
 
