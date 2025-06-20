@@ -68,7 +68,7 @@ class PostRepository
 
     /**
      * @param array $slugs
-     * @return array
+     * @return int[]
      */
     public function getTagIdsBySlugs(array $slugs): array
     {
@@ -77,7 +77,7 @@ class PostRepository
 
     /**
      * @param Post $post
-     * @param array $tagIds
+     * @param int[] $tagIds
      * @return void
      */
     public function syncPostTags(Post $post, array $tagIds): void

@@ -73,7 +73,7 @@ class PostService
             ]);
 
             // Handle thumbnail upload
-            if (!empty($validated['thumbnail_image'])) {
+            if ($validated['thumbnail_image'] instanceof UploadedFile) {
                 /** @var UploadedFile $file */
                 $file = $validated['thumbnail_image'];
                 $thumbnailPath = $file->store("posts/{$postId}/thumbnail",'public');
@@ -90,7 +90,7 @@ class PostService
             }
 
             // Handle additional images
-            if (!empty($validated['additional_images'])) {
+            if ($validated['additional_images'] instanceof UploadedFile) {
                 foreach ($validated['additional_images'] as $image) {
                     $path = $image->store("posts/{$postId}/additional",'public');
 
@@ -103,7 +103,7 @@ class PostService
             }
 
             // Sync tags
-            if (!empty($validated['tag_slugs'])) {
+            if (count($validated['tag_slugs']) > 0) {
                 $tagIds = $this->postRepository->getTagIdsBySlugs($validated['tag_slugs']);
                 $this->postRepository->syncPostTags($post, $tagIds);
             }
