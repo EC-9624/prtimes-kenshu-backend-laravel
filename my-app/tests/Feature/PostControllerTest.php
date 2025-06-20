@@ -185,6 +185,72 @@ class PostControllerTest extends TestCase
         $response->assertSessionHas('success', 'Post successfully created.');
     }
 
+    public function test_display_edit_post(): void
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->get(route('editPost', $post->slug));
+
+        $response->assertStatus(200);
+    }
+
+    public function test_error_when_edit_post_user_id_mismatch(): void
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->patch(route('editPost.post', $post->slug), [
+            'title' => 'Some Title',
+            'slug' => $post->slug,
+            'text' => 'Some text',
+            'tag_slugs' => [],
+        ]);
+
+        $response->assertRedirect(route('editPost', $post->slug));
+        $response->assertSessionHasErrors();
+
+        $errors = session('errors')->all();
+
+        $this->assertContains('You are not authorized to edit this post.', $errors);
+
+    }
+
+    public function test_unauthorized_user_cannot_soft_delete_post(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $post = Post::factory()->for($owner)->create();
+
+        $response = $this->actingAs($otherUser)->delete(route('deletePost', $post->slug));
+
+        $response->assertRedirect(route('post', $post->slug));
+
+
+        $this->assertDatabaseHas('posts', [
+            'post_id' => $post->post_id,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_authorized_user_can_soft_delete_post(): void
+    {
+        $user = User::factory()->create();
+
+        $post = Post::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->delete(route('deletePost', $post->slug));
+
+        $response->assertRedirect(route('home'));
+
+        $this->assertSoftDeleted('posts', ['post_id' => $post->post_id]);
+    }
+
+
+
+
 
     protected function performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
     {

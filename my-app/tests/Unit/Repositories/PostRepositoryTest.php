@@ -372,5 +372,76 @@ class PostRepositoryTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider updatePostCases
+     */
+    /**
+     * @dataProvider updatePostCases
+     */
+    public function test_update_post(array $case): void
+    {
+        $user = User::factory()->create();
+
+        $post = Post::factory()->create(array_merge(
+            $case['initial'],
+            ['user_id' => $user->user_id]
+        ));
+
+        $this->repository->updatePost($post, $case['update']);
+
+        $this->assertDatabaseHas('posts', [
+            'post_id' => $post->post_id,
+            'title' => $case['update']['title'],
+            'text' => $case['update']['text'],
+            'slug' => $case['initial']['slug'],
+        ]);
+
+    }
+
+    public static function updatePostCases(): array
+    {
+        return [
+            'basic update' => [
+                [
+                    'initial' => [
+                        'title' => 'Original Title',
+                        'slug' => 'original-title',
+                        'text' => 'Original text content.',
+                    ],
+                    'update' => [
+                        'title' => 'Updated Title',
+                        'slug' => 'updated-title',
+                        'text' => 'Updated text content.',
+                    ],
+                    'description' => 'Should update title and text, but not slug',
+                ]
+            ],
+            'update with similar slug' => [
+                [
+                    'initial' => [
+                        'title' => 'Another Title',
+                        'slug' => 'another-title',
+                        'text' => 'Some initial text.',
+                    ],
+                    'update' => [
+                        'title' => 'Another Title Edited',
+                        'text' => 'Some updated text.',
+                    ],
+                    'description' => 'Should update title and text only; slug must stay unchanged',
+                ]
+            ],
+        ];
+    }
+
+    public function test_soft_delete_post(): void
+    {
+        $post = Post::factory()->create();
+
+        $this->repository->softDeletePost($post);
+
+        $this->assertSoftDeleted('posts', [
+            'post_id' => $post->post_id,
+        ]);
+    }
 
 }
