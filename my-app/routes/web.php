@@ -10,6 +10,11 @@ Route::get('/', [PostController::class, 'index'])->name('home');
 Route::get('categories/{tagSlug}', [PostController::class, 'showPostsByTag'])->name('posts.byTag');
 Route::get('posts/{postSlug}', [PostController::class, 'showPost'])->name('post');
 
+Route::middleware('auth')->group(function () {
+    Route::get('create-post', [PostController::class, 'showCreatePost'])->name('createPost');
+    Route::post('create-post', [PostController::class, 'createPost'])->name('createPost.post');
+});
+
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
@@ -17,5 +22,7 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
 
 

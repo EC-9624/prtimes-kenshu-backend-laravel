@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 
+/**
+ * @method static create(array $data)
+ */
 class Image extends Model
 {
     /** @use HasFactory<\Database\Factories\ImageFactory> */

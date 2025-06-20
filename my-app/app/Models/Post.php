@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 
+/**
+ * @method static create(array $data)
+ */
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */
@@ -22,6 +25,7 @@ class Post extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'post_id',
         'user_id',
         'title',
         'slug',

@@ -20,12 +20,12 @@
                     <!-- Thumbnail -->
                     @if ($data->thumbnail)
                         <img
-                            src="{{ $data->thumbnail->image_path}}"
+                            src="{{ Storage::disk('public')->url($data->thumbnail->image_path) }}"
                             alt="{{ $data->title }}"
                             class="mt-2 w-full rounded">
                     @else
                         <img
-                            src="/img/image-placeholder.svg"
+                            src="{{ Storage::disk('public')->url('image-placeholder.svg') }}"
                             alt="No thumbnail"
                             class="mt-2 w-full rounded">
                     @endif
@@ -63,19 +63,21 @@
                     <div class="mt-4 text-gray-800 leading-relaxed whitespace-pre-line">
                         {{ $data->text }}
                     </div>
-
                     <!-- Additional Images -->
-{{--                    @if (!empty($data->additionalImages))--}}
-{{--                        <div class="mt-4 grid grid-cols-2 max-w-xl w-full items-center justify-center gap-2">--}}
-{{--                            @foreach ($data->additionalImages as $img)--}}
-{{--                                <img--}}
-{{--                                    src="{{ $img['image_path'] }}"--}}
-{{--                                    width="280"--}}
-{{--                                    height="280"--}}
-{{--                                    class="mt-2 object-cover rounded max-w-xs">--}}
-{{--                            @endforeach--}}
-{{--                        </div>--}}
-{{--                    @endif--}}
+                    @if (!is_null($data->images) && $data->images->isNotEmpty())
+                        <div class="mt-4 grid grid-cols-2 max-w-xl w-full items-center justify-center gap-2">
+                            @foreach ($data->images as $img)
+                                <img
+                                    src="{{ Storage::disk('public')->url($img->image_path) }}"
+                                    width="280"
+                                    height="280"
+                                    class="mt-2 object-cover rounded max-w-xs"
+                                    alt="{{ $data->title . 'Additional image' }}"
+                                >
+                            @endforeach
+                        </div>
+                    @endif
+
                 </div>
             </div>
         </div>

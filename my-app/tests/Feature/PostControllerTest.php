@@ -5,8 +5,12 @@ namespace Tests\Feature;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\PostService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Mockery;
 use Tests\TestCase;
 
 class PostControllerTest extends TestCase
@@ -131,6 +135,56 @@ class PostControllerTest extends TestCase
         $response->assertNotFound();
     }
 
+    public function test_display_create_post(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('createPost'));
+
+        $response->assertStatus(200);
+    }
+
+    public function test_guest_is_redirected_when_accessing_create_post(): void
+    {
+        $response = $this->get(route('createPost'));
+
+        $response->assertRedirect(route('login'));
+        $response->assertStatus(302);
+    }
+
+    public function test_create_post_successfully_redirects_and_shows_success_message(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $thumbnail = UploadedFile::fake()->create('thumb.jpg', 100, 'image/jpeg');
+        $additional = [
+            UploadedFile::fake()->create('img1.jpg', 100, 'image/jpeg'),
+        ];
+
+        $payload = [
+            'title' => 'Test Post',
+            'slug' => 'test-post',
+            'text' => 'This is the post body.',
+            'thumbnail_image' => $thumbnail,
+            'alt_text' => 'Thumbnail alt text',
+            'additional_images' => $additional,
+            'tag_slugs' => [], //  no tags for this test
+        ];
+
+        // Mock the PostService
+        $mock = Mockery::mock(PostService::class);
+        $mock->shouldReceive('createPost')->once();
+        $this->app->instance(PostService::class, $mock);
+
+        $response = $this->post(route('createPost.post'), $payload);
+
+        $response->assertRedirect(route('home'));
+        $response->assertSessionHas('success', 'Post successfully created.');
+    }
+
 
     protected function performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
     {
@@ -188,4 +242,5 @@ class PostControllerTest extends TestCase
             $response->assertDontSee($posts[$key]->title);
         }
     }
+
 }

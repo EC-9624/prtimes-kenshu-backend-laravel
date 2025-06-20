@@ -40,8 +40,8 @@ class UserRepositoryTest extends TestCase
 
         // Assert the returned user is correct
         $this->assertInstanceOf(User::class, $user);
-        $this->assertEquals('Test User', $user->user_name);
-        $this->assertEquals('test@example.com', $user->email);
+        $this->assertSame('Test User', $user->user_name);
+        $this->assertSame('test@example.com', $user->email);
 
         // Assert password is hashed
         $this->assertTrue(Hash::check('secret123', $user->password));

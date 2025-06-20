@@ -3,9 +3,23 @@ FROM php:8.3.21-fpm-alpine3.20
 RUN apk add --no-cache \
     postgresql-dev \
     libpq \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    libxpm-dev \
     autoconf \
     build-base \
-    && docker-php-ext-install pdo_pgsql pgsql pdo_mysql
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
+        --with-xpm \
+    && docker-php-ext-install \
+        pdo_pgsql \
+        pgsql \
+        pdo_mysql \
+        gd
 
 RUN chown www-data:www-data /var/log/ && chmod 755 /var/log/
 
@@ -17,6 +31,6 @@ WORKDIR /var/www/
 
 COPY --from=composer/composer:latest /usr/bin/composer /usr/bin/composer
 
-# FIX: Copy the *contents* of my-app from the build context (which is the project root)
-# into the /var/www/ directory inside the container.
+COPY docker/php-fpm/php.ini /usr/local/etc/php/conf.d/custom.ini
+
 COPY my-app/ /var/www/

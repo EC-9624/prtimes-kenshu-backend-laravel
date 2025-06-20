@@ -29,7 +29,7 @@ class AuthControllerTest extends TestCase
             'password_confirmation' => 'password123',
         ]);
 
-        $response->assertRedirect(route('login'));
+        $response->assertRedirect(route('home'));
 
         $this->assertDatabaseCount('users', self::EXPECTS_COUNTS);
 
