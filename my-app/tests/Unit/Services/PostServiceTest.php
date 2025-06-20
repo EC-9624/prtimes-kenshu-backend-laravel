@@ -320,6 +320,43 @@ class PostServiceTest extends TestCase
         $this->service->updatePost($slug, $data);
     }
 
+    /**
+     * @throws Throwable
+     */
+    public function test_delete_post_delegates_to_and_soft_deletes(): void
+    {
+        // Create a Post instance
+        $post = Post::factory()->make(['post_id' => 'test-id', 'slug' => 'test-slug']);
+
+
+        // Ensure softDeletePost is called on the repository with the correct Post object
+        $this->postRepoMock
+            ->shouldReceive('softDeletePost')
+            ->once()
+            ->with(Mockery::on(function ($arg) use ($post) {
+
+                return $arg instanceof Post && $arg->post_id === $post->post_id;
+            }))
+            ->andReturn(true);
+
+
+        $this->service->deletePost($post);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_unauthorized_user_cannot_soft_delete_post(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $post = Post::factory()->for($owner)->create();
+
+        $response = $this->actingAs($otherUser)->delete(route('deletePost', $post->slug));
+
+        $response->assertRedirect(route('post', $post->slug));
+        $this->assertDatabaseHas('posts', ['post_id' => $post->post_id, 'deleted_at' => null]);
+    }
+
 
     protected function tearDown(): void
     {

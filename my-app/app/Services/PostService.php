@@ -145,12 +145,17 @@ class PostService
         }
     }
 
+    /**
+     * @param Post $post
+     * @return void
+     * @throws Throwable
+     */
     public function deletePost(Post $post): void
     {
         DB::beginTransaction();
 
         try {
-            $post->delete(); // Soft delete
+            $this->postRepository->softDeletePost($post);
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
@@ -158,8 +163,5 @@ class PostService
             throw $e;
         }
     }
-
-
-
 
 }

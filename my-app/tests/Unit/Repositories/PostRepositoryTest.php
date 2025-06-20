@@ -434,7 +434,15 @@ class PostRepositoryTest extends TestCase
         ];
     }
 
+    public function test_soft_delete_post(): void
+    {
+        $post = Post::factory()->create();
 
+        $this->repository->softDeletePost($post);
 
+        $this->assertSoftDeleted('posts', [
+            'post_id' => $post->post_id,
+        ]);
+    }
 
 }

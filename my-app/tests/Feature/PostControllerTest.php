@@ -218,6 +218,39 @@ class PostControllerTest extends TestCase
 
     }
 
+    public function test_unauthorized_user_cannot_soft_delete_post(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $post = Post::factory()->for($owner)->create();
+
+        $response = $this->actingAs($otherUser)->delete(route('deletePost', $post->slug));
+
+        $response->assertRedirect(route('post', $post->slug));
+
+
+        $this->assertDatabaseHas('posts', [
+            'post_id' => $post->post_id,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_authorized_user_can_soft_delete_post(): void
+    {
+        $user = User::factory()->create();
+
+        $post = Post::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->delete(route('deletePost', $post->slug));
+
+        $response->assertRedirect(route('home'));
+
+        $this->assertSoftDeleted('posts', ['post_id' => $post->post_id]);
+    }
+
+
+
+
 
     protected function performPostDisplayAssertions($url, $expectedTitle, $expectedPosts, $unexpectedPosts): void
     {
