@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Post;
+use App\Models\Tag;
 use App\Repositories\PostRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class PostService
@@ -115,5 +117,51 @@ class PostService
         }
     }
 
+    /**
+     * @param string $post_slug
+     * @param array $data
+     * @return void
+     * @throws Throwable
+     */
+    public function updatePost(string $post_slug, array $data): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post = self::getPostBySlug($post_slug);
+
+            $this->postRepository->updatePost($post, $data);
+
+            if (isset($data['tags']) && is_array($data['tags'])) {
+                $tagIds = $this->postRepository->getTagIdsBySlugs($data['tags']);
+                $this->postRepository->syncPostTags($post, $tagIds);
+            }
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Failed to update post: ' . $e->getMessage(), ['slug' => $post_slug]);
+            throw $e;
+        }
+    }
+
+    /**
+     * @param Post $post
+     * @return void
+     * @throws Throwable
+     */
+    public function deletePost(Post $post): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $this->postRepository->softDeletePost($post);
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Failed to delete post: ' . $e->getMessage(), ['post_id' => $post->post_id]);
+            throw $e;
+        }
+    }
 
 }
